@@ -1,0 +1,296 @@
+-- VanityUI Library (style Vanity du screenshot)
+local Vanity = {}
+
+function Vanity:MakeWindow(options)
+    local self = {}
+    self.Window = {}
+
+    -- Création de la ScreenGui + Main Frame (même look que ton image)
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "VanityUI"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+    local Main = Instance.new("Frame")
+    Main.Size = UDim2.new(0, 420, 0, 530)
+    Main.Position = UDim2.new(0.5, -210, 0.5, -265)
+    Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    Main.BorderSizePixel = 0
+    Main.Parent = ScreenGui
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 16)
+    Corner.Parent = Main
+
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Color3.fromRGB(0, 162, 255)
+    Stroke.Thickness = 3
+    Stroke.Parent = Main
+
+    -- Header bleu VANITY
+    local Header = Instance.new("Frame")
+    Header.Size = UDim2.new(1, 0, 0, 90)
+    Header.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    Header.Parent = Main
+
+    local Grad = Instance.new("UIGradient")
+    Grad.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 180, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 80, 200))
+    }
+    Grad.Rotation = 90
+    Grad.Parent = Header
+
+    local HCorner = Instance.new("UICorner")
+    HCorner.CornerRadius = UDim.new(0, 16)
+    HCorner.Parent = Header
+
+    -- Logo V + VANITY
+    local Logo = Instance.new("TextLabel")
+    Logo.Size = UDim2.new(0, 70, 0, 70)
+    Logo.Position = UDim2.new(0, 20, 0, 10)
+    Logo.BackgroundTransparency = 1
+    Logo.Text = "V"
+    Logo.TextColor3 = Color3.fromRGB(0, 220, 255)
+    Logo.TextScaled = true
+    Logo.Font = Enum.Font.GothamBlack
+    Logo.Parent = Header
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(0.65, 0, 0, 60)
+    Title.Position = UDim2.new(0.25, 0, 0.15, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = "VANITY"
+    Title.TextColor3 = Color3.new(1,1,1)
+    Title.TextScaled = true
+    Title.Font = Enum.Font.GothamBlack
+    Title.Parent = Header
+
+    -- Title Bar "Misc Options" (on la laisse vide pour l'instant, on la change selon le tab actif)
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Size = UDim2.new(1, 0, 0, 40)
+    TitleBar.Position = UDim2.new(0, 0, 0, 90)
+    TitleBar.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    TitleBar.Parent = Main
+
+    self.TitleLabel = Instance.new("TextLabel")
+    self.TitleLabel.Size = UDim2.new(1,0,1,0)
+    self.TitleLabel.BackgroundTransparency = 1
+    self.TitleLabel.Text = options.Name or "Misc Options"
+    self.TitleLabel.TextColor3 = Color3.new(1,1,1)
+    self.TitleLabel.Font = Enum.Font.GothamBold
+    self.TitleLabel.TextScaled = true
+    self.TitleLabel.Parent = TitleBar
+
+    -- Tab Bar
+    local TabBar = Instance.new("Frame")
+    TabBar.Size = UDim2.new(1, 0, 0, 40)
+    TabBar.Position = UDim2.new(0, 0, 0, 130)
+    TabBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    TabBar.Parent = Main
+
+    local TabLayout = Instance.new("UIListLayout")
+    TabLayout.FillDirection = Enum.FillDirection.Horizontal
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabLayout.Padding = UDim.new(0, 5)
+    TabLayout.Parent = TabBar
+
+    -- Scrolling Content (on va le changer quand on change de tab)
+    self.ContentFrame = Instance.new("Frame")
+    self.ContentFrame.Size = UDim2.new(1, 0, 1, -200)
+    self.ContentFrame.Position = UDim2.new(0, 0, 0, 170)
+    self.ContentFrame.BackgroundTransparency = 1
+    self.ContentFrame.Parent = Main
+
+    self.CurrentPage = nil
+
+    -- Footer
+    local Footer = Instance.new("Frame")
+    Footer.Size = UDim2.new(1, 0, 0, 30)
+    Footer.Position = UDim2.new(0, 0, 1, -30)
+    Footer.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    Footer.Parent = Main
+
+    local FooterText = Instance.new("TextLabel")
+    FooterText.Size = UDim2.new(1,0,1,0)
+    FooterText.BackgroundTransparency = 1
+    FooterText.Text = "Build 51538 | discord.gg/vanitymenu   2 / 8"
+    FooterText.TextColor3 = Color3.fromRGB(140,140,140)
+    FooterText.Font = Enum.Font.Gotham
+    FooterText.TextScaled = true
+    FooterText.Parent = Footer
+
+    -- Fonction pour créer un Tab
+    function self:CreateTab(tabName)
+        local TabButton = Instance.new("TextButton")
+        TabButton.Size = UDim2.new(0.33, 0, 1, 0)
+        TabButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        TabButton.Text = tabName
+        TabButton.TextColor3 = Color3.new(1,1,1)
+        TabButton.Font = Enum.Font.GothamBold
+        TabButton.TextScaled = true
+        TabButton.Parent = TabBar
+
+        local TCorner = Instance.new("UICorner")
+        TCorner.CornerRadius = UDim.new(0, 8)
+        TCorner.Parent = TabButton
+
+        -- Page pour ce tab
+        local Page = Instance.new("ScrollingFrame")
+        Page.Size = UDim2.new(1, 0, 1, 0)
+        Page.BackgroundTransparency = 1
+        Page.ScrollBarThickness = 6
+        Page.Visible = false
+        Page.Parent = self.ContentFrame
+
+        local List = Instance.new("UIListLayout")
+        List.Padding = UDim.new(0, 8)
+        List.SortOrder = Enum.SortOrder.LayoutOrder
+        List.Parent = Page
+
+        -- Quand on clique sur le tab
+        TabButton.MouseButton1Click:Connect(function()
+            if self.CurrentPage then
+                self.CurrentPage.Visible = false
+            end
+            Page.Visible = true
+            self.CurrentPage = Page
+            self.TitleLabel.Text = tabName  -- change le titre en haut
+        end)
+
+        local TabObject = {}
+
+        function TabObject:AddToggle(name, default, callback)
+            -- Toggle stylé comme dans ton image
+            local ToggleFrame = Instance.new("Frame")
+            ToggleFrame.Size = UDim2.new(1, -20, 0, 50)
+            ToggleFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            ToggleFrame.Parent = Page
+
+            local TC = Instance.new("UICorner")
+            TC.CornerRadius = UDim.new(0, 10)
+            TC.Parent = ToggleFrame
+
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(0.75, 0, 1, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = "  " .. name
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.TextColor3 = Color3.new(1,1,1)
+            Label.Font = Enum.Font.Gotham
+            Label.TextScaled = true
+            Label.Parent = ToggleFrame
+
+            local Switch = Instance.new("Frame")
+            Switch.Size = UDim2.new(0, 60, 0, 30)
+            Switch.Position = UDim2.new(0.82, 0, 0.5, -15)
+            Switch.BackgroundColor3 = default and Color3.fromRGB(0, 162, 255) or Color3.fromRGB(60, 60, 60)
+            Switch.Parent = ToggleFrame
+
+            local SC = Instance.new("UICorner")
+            SC.CornerRadius = UDim.new(1, 0)
+            SC.Parent = Switch
+
+            local Knob = Instance.new("Frame")
+            Knob.Size = UDim2.new(0, 26, 0, 26)
+            Knob.Position = UDim2.new(default and 1 or 0, default and -26 or 0, 0.5, -13)
+            Knob.BackgroundColor3 = Color3.new(1,1,1)
+            Knob.Parent = Switch
+
+            local KC = Instance.new("UICorner")
+            KC.CornerRadius = UDim.new(1, 0)
+            KC.Parent = Knob
+
+            local state = default
+            local function UpdateToggle()
+                Switch.BackgroundColor3 = state and Color3.fromRGB(0, 162, 255) or Color3.fromRGB(60, 60, 60)
+                Knob:TweenPosition(UDim2.new(state and 1 or 0, state and -26 or 0, 0.5, -13), "Out", "Quad", 0.25, true)
+            end
+
+            Switch.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    state = not state
+                    UpdateToggle()
+                    if callback then callback(state) end
+                end
+            end)
+
+            UpdateToggle()
+        end
+
+        function TabObject:AddButton(name, callback)
+            local BtnFrame = Instance.new("Frame")
+            BtnFrame.Size = UDim2.new(1, -20, 0, 45)
+            BtnFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            BtnFrame.Parent = Page
+
+            local BC = Instance.new("UICorner")
+            BC.CornerRadius = UDim.new(0, 10)
+            BC.Parent = BtnFrame
+
+            local Btn = Instance.new("TextButton")
+            Btn.Size = UDim2.new(1,0,1,0)
+            Btn.BackgroundTransparency = 1
+            Btn.Text = name .. "   >"
+            Btn.TextXAlignment = Enum.TextXAlignment.Left
+            Btn.TextColor3 = Color3.new(1,1,1)
+            Btn.Font = Enum.Font.Gotham
+            Btn.TextScaled = true
+            Btn.Parent = BtnFrame
+
+            Btn.MouseButton1Click:Connect(function()
+                if callback then callback() end
+            end)
+        end
+
+        function TabObject:AddSection(name)
+            local Sep = Instance.new("Frame")
+            Sep.Size = UDim2.new(1, -20, 0, 35)
+            Sep.BackgroundTransparency = 1
+            Sep.Parent = Page
+
+            local Line = Instance.new("Frame")
+            Line.Size = UDim2.new(1, 0, 0, 2)
+            Line.Position = UDim2.new(0, 0, 0.5, 0)
+            Line.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            Line.Parent = Sep
+
+            local Text = Instance.new("TextLabel")
+            Text.Size = UDim2.new(0, 150, 1, 0)
+            Text.Position = UDim2.new(0.5, -75, 0, 0)
+            Text.BackgroundTransparency = 1
+            Text.Text = name
+            Text.TextColor3 = Color3.fromRGB(160, 160, 160)
+            Text.Font = Enum.Font.GothamBold
+            Text.TextScaled = true
+            Text.Parent = Sep
+        end
+
+        return TabObject
+    end
+
+    -- Rendre draggable
+    local dragging = false
+    Header.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            local startPos = Main.Position
+            local startMouse = input.Position
+            game:GetService("RunService").RenderStepped:Connect(function()
+                if dragging then
+                    local delta = game:GetService("UserInputService"):GetMouseLocation() - startMouse
+                    Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+                end
+            end)
+        end
+    end)
+    game:GetService("UserInputService").InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+
+    return self
+end
+
+return Vanity
