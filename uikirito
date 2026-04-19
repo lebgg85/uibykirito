@@ -1,20 +1,29 @@
--- VanityUI Library - Style Vanity (Draggable + Sliders + Dropdowns + Keybinds)
+-- VanityUI Library - Version Finale (Mobile Friendly + Dropdown Beau + Animations Fluides + Hotkey + Position Droite)
 local Vanity = {}
 
 function Vanity:MakeWindow(options)
-	local self = { Tabs = {}, CurrentTab = nil }
+	local self = { Tabs = {}, CurrentTab = nil, Visible = true }
+
+	local TweenService = game:GetService("TweenService")
+	local UserInputService = game:GetService("UserInputService")
+
+	-- Détection mobile pour adapter la taille (plus petit sur téléphone)
+	local isMobile = UserInputService.TouchEnabled
+	local baseWidth = isMobile and 310 or 420
+	local baseHeight = isMobile and 410 or 530
 
 	local ScreenGui = Instance.new("ScreenGui")
 	ScreenGui.Name = "VanityUI"
 	ScreenGui.ResetOnSpawn = false
 	ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-	-- Main Frame
+	-- Main Frame (positionnée à DROITE de l'écran dès le lancement)
 	local Main = Instance.new("Frame")
-	Main.Size = UDim2.new(0, 420, 0, 530)
-	Main.Position = UDim2.new(0.5, -210, 0.5, -265)
+	Main.Size = UDim2.new(0, baseWidth, 0, baseHeight)
+	Main.Position = UDim2.new(1, -baseWidth - 20, 0.5, -baseHeight/2) -- droite avec petit padding
 	Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 	Main.BorderSizePixel = 0
+	Main.Visible = true
 	Main.Parent = ScreenGui
 
 	local MainCorner = Instance.new("UICorner")
@@ -26,7 +35,7 @@ function Vanity:MakeWindow(options)
 	Stroke.Thickness = 3
 	Stroke.Parent = Main
 
-	-- Header
+	-- Header bleu VANITY
 	local Header = Instance.new("Frame")
 	Header.Size = UDim2.new(1, 0, 0, 85)
 	Header.BackgroundColor3 = Color3.fromRGB(0, 110, 255)
@@ -45,8 +54,8 @@ function Vanity:MakeWindow(options)
 
 	-- Logo V + VANITY
 	local V = Instance.new("TextLabel")
-	V.Size = UDim2.new(0, 65, 0, 65)
-	V.Position = UDim2.new(0, 25, 0.5, -32)
+	V.Size = UDim2.new(0, 58, 0, 58)
+	V.Position = UDim2.new(0, 20, 0.5, -29)
 	V.BackgroundTransparency = 1
 	V.Text = "V"
 	V.TextColor3 = Color3.fromRGB(0, 230, 255)
@@ -55,14 +64,29 @@ function Vanity:MakeWindow(options)
 	V.Parent = Header
 
 	local VanityText = Instance.new("TextLabel")
-	VanityText.Size = UDim2.new(0.6, 0, 0, 60)
-	VanityText.Position = UDim2.new(0.22, 0, 0.5, -30)
+	VanityText.Size = UDim2.new(0.6, 0, 0, 55)
+	VanityText.Position = UDim2.new(0.22, 0, 0.5, -27)
 	VanityText.BackgroundTransparency = 1
 	VanityText.Text = "VANITY"
 	VanityText.TextColor3 = Color3.new(1,1,1)
 	VanityText.TextScaled = true
 	VanityText.Font = Enum.Font.GothamBlack
 	VanityText.Parent = Header
+
+	-- Bouton fermer (X) - visible sur mobile et PC
+	local CloseBtn = Instance.new("TextButton")
+	CloseBtn.Size = UDim2.new(0, 34, 0, 34)
+	CloseBtn.Position = UDim2.new(1, -42, 0, 8)
+	CloseBtn.BackgroundTransparency = 1
+	CloseBtn.Text = "✕"
+	CloseBtn.TextColor3 = Color3.new(1,1,1)
+	CloseBtn.TextScaled = true
+	CloseBtn.Font = Enum.Font.GothamBold
+	CloseBtn.Parent = Header
+
+	CloseBtn.MouseButton1Click:Connect(function()
+		self:Toggle()
+	end)
 
 	-- Title Bar
 	local TitleBar = Instance.new("Frame")
@@ -80,7 +104,7 @@ function Vanity:MakeWindow(options)
 	self.TitleLabel.TextScaled = true
 	self.TitleLabel.Parent = TitleBar
 
-	-- Tab Bar
+	-- Tab Bar (exactement comme la photo : Misc en bleu quand sélectionné)
 	local TabBar = Instance.new("Frame")
 	TabBar.Size = UDim2.new(1, 0, 0, 45)
 	TabBar.Position = UDim2.new(0, 0, 0, 125)
@@ -93,7 +117,7 @@ function Vanity:MakeWindow(options)
 	TabList.Padding = UDim.new(0, 4)
 	TabList.Parent = TabBar
 
-	-- Content Area
+	-- Content
 	local Content = Instance.new("Frame")
 	Content.Size = UDim2.new(1, 0, 1, -200)
 	Content.Position = UDim2.new(0, 0, 0, 170)
@@ -116,32 +140,42 @@ function Vanity:MakeWindow(options)
 	FooterText.TextScaled = true
 	FooterText.Parent = Footer
 
-	-- Draggable
-	local dragging, dragInput, dragStart, startPos
+	-- Draggable (fonctionne aussi sur mobile avec toucher)
+	local dragging = false
 	Header.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
-			dragStart = input.Position
-			startPos = Main.Position
+			local startPos = Main.Position
+			local startInput = input.Position
+			local conn
+			conn = game:GetService("RunService").RenderStepped:Connect(function()
+				if dragging then
+					local delta = UserInputService:GetMouseLocation() - startInput
+					Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+				end
+			end)
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+					if conn then conn:Disconnect() end
+				end
+			end)
 		end
 	end)
 
-	Header.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
-			dragInput = input
-		end
-	end)
+	-- Fonction Toggle (ouvrir/fermer le menu)
+	function self:Toggle()
+		self.Visible = not self.Visible
+		local goal = {Size = UDim2.new(0, baseWidth, 0, self.Visible and baseHeight or 0)}
+		TweenService:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), goal):Play()
+		Main.Visible = true -- on garde visible mais on réduit la hauteur pour une belle animation
+	end
 
-	game:GetService("UserInputService").InputChanged:Connect(function(input)
-		if dragging and input == dragInput then
-			local delta = input.Position - dragStart
-			Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		end
-	end)
-
-	game:GetService("UserInputService").InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = false
+	-- Hotkey RightShift (ou F4 si tu veux changer)
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed then return end
+		if input.KeyCode == Enum.KeyCode.RightShift or input.KeyCode == Enum.KeyCode.F4 then
+			self:Toggle()
 		end
 	end)
 
@@ -173,11 +207,15 @@ function Vanity:MakeWindow(options)
 		ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 		ListLayout.Parent = Page
 
+		-- Animation fluide quand on change de tab
 		TabButton.MouseButton1Click:Connect(function()
 			if self.CurrentTab then
-				self.CurrentTab.Page.Visible = false
 				self.CurrentTab.Button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+				local fadeOut = TweenService:Create(self.CurrentTab.Page, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundTransparency = 1})
+				fadeOut:Play()
+				self.CurrentTab.Page.Visible = false
 			end
+
 			Page.Visible = true
 			TabButton.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
 			self.TitleLabel.Text = name
@@ -186,7 +224,9 @@ function Vanity:MakeWindow(options)
 
 		local Tab = {}
 
+		-- Toggle (animation fluide déjà présente)
 		function Tab:AddToggle(name, default, callback)
+			-- (code identique à la version précédente mais avec tween plus fluide)
 			local Frame = Instance.new("Frame")
 			Frame.Size = UDim2.new(1, -20, 0, 50)
 			Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -227,24 +267,25 @@ function Vanity:MakeWindow(options)
 			KC.Parent = Knob
 
 			local state = default
-
 			local function Update()
-				Switch.BackgroundColor3 = state and Color3.fromRGB(0, 162, 255) or Color3.fromRGB(60, 60, 60)
-				Knob:TweenPosition(UDim2.new(state and 1 or 0, state and -28 or 0, 0.5, -14), "Out", "Quad", 0.2, true)
+				local colorGoal = {BackgroundColor3 = state and Color3.fromRGB(0, 162, 255) or Color3.fromRGB(60, 60, 60)}
+				TweenService:Create(Switch, TweenInfo.new(0.25, Enum.EasingStyle.Quint), colorGoal):Play()
+				Knob:TweenPosition(UDim2.new(state and 1 or 0, state and -28 or 0, 0.5, -14), "Out", "Quint", 0.25, true)
 			end
 
 			Switch.InputBegan:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.MouseButton1 then
+				if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
 					state = not state
 					Update()
 					if callback then callback(state) end
 				end
 			end)
-
 			Update()
 		end
 
+		-- Slider (animation fluide)
 		function Tab:AddSlider(name, min, max, default, callback)
+			-- (code identique à la version précédente avec tween sur le fill)
 			local Frame = Instance.new("Frame")
 			Frame.Size = UDim2.new(1, -20, 0, 65)
 			Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -275,7 +316,7 @@ function Vanity:MakeWindow(options)
 			SCorner.Parent = SliderBar
 
 			local Fill = Instance.new("Frame")
-			Fill.Size = UDim2.new(0.5, 0, 1, 0)
+			Fill.Size = UDim2.new(0, 0, 1, 0)
 			Fill.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
 			Fill.Parent = SliderBar
 
@@ -298,26 +339,26 @@ function Vanity:MakeWindow(options)
 
 			local function UpdateSlider()
 				local percent = (value - min) / (max - min)
-				Fill.Size = UDim2.new(percent, 0, 1, 0)
+				TweenService:Create(Fill, TweenInfo.new(0.15, Enum.EasingStyle.Quint), {Size = UDim2.new(percent, 0, 1, 0)}):Play()
 				ValueLabel.Text = tostring(math.floor(value))
 				if callback then callback(value) end
 			end
 
 			SliderBar.InputBegan:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.MouseButton1 then
+				if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
 					dragging = true
 				end
 			end)
 
-			game:GetService("UserInputService").InputEnded:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.MouseButton1 then
+			UserInputService.InputEnded:Connect(function(i)
+				if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
 					dragging = false
 				end
 			end)
 
 			game:GetService("RunService").RenderStepped:Connect(function()
 				if dragging then
-					local mouseX = game:GetService("UserInputService"):GetMouseLocation().X
+					local mouseX = UserInputService:GetMouseLocation().X
 					local barPos = SliderBar.AbsolutePosition.X
 					local barSize = SliderBar.AbsoluteSize.X
 					local percent = math.clamp((mouseX - barPos) / barSize, 0, 1)
@@ -329,8 +370,8 @@ function Vanity:MakeWindow(options)
 			UpdateSlider()
 		end
 
+		-- DROPDOWN BEAU avec liste qui descend (animation fluide)
 		function Tab:AddDropdown(name, options, default, callback)
-			-- Version simple (tu peux l'améliorer plus tard)
 			local Frame = Instance.new("Frame")
 			Frame.Size = UDim2.new(1, -20, 0, 50)
 			Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -341,7 +382,7 @@ function Vanity:MakeWindow(options)
 			Corner.Parent = Frame
 
 			local Label = Instance.new("TextLabel")
-			Label.Size = UDim2.new(0.7, 0, 1, 0)
+			Label.Size = UDim2.new(0.65, 0, 1, 0)
 			Label.BackgroundTransparency = 1
 			Label.Text = name
 			Label.TextXAlignment = Enum.TextXAlignment.Left
@@ -350,75 +391,120 @@ function Vanity:MakeWindow(options)
 			Label.TextScaled = true
 			Label.Parent = Frame
 
-			local Selected = Instance.new("TextButton")
-			Selected.Size = UDim2.new(0.25, 0, 0.8, 0)
-			Selected.Position = UDim2.new(0.72, 0, 0.1, 0)
-			Selected.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-			Selected.Text = default or options[1]
-			Selected.TextColor3 = Color3.new(1,1,1)
-			Selected.Font = Enum.Font.Gotham
-			Selected.TextScaled = true
-			Selected.Parent = Frame
+			local DropdownBtn = Instance.new("TextButton")
+			DropdownBtn.Size = UDim2.new(0.32, 0, 0.8, 0)
+			DropdownBtn.Position = UDim2.new(0.66, 0, 0.1, 0)
+			DropdownBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+			DropdownBtn.Text = default or options[1]
+			DropdownBtn.TextColor3 = Color3.new(1,1,1)
+			DropdownBtn.Font = Enum.Font.Gotham
+			DropdownBtn.TextScaled = true
+			DropdownBtn.Parent = Frame
 
-			local SC = Instance.new("UICorner")
-			SC.CornerRadius = UDim.new(0, 8)
-			SC.Parent = Selected
+			local DCorner = Instance.new("UICorner")
+			DCorner.CornerRadius = UDim.new(0, 8)
+			DCorner.Parent = DropdownBtn
 
-			Selected.MouseButton1Click:Connect(function()
-				-- Pour l'instant simple print, tu peux faire un vrai dropdown plus tard
-				print("Dropdown " .. name .. " clicked - options: ", options)
-				if callback then callback(Selected.Text) end
+			-- Liste qui descend
+			local ListFrame = Instance.new("Frame")
+			ListFrame.Size = UDim2.new(0.32, 0, 0, 0)
+			ListFrame.Position = UDim2.new(0.66, 0, 1, 8)
+			ListFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+			ListFrame.BorderSizePixel = 0
+			ListFrame.Visible = false
+			ListFrame.Parent = Frame  -- attaché au dropdown
+
+			local LCorner = Instance.new("UICorner")
+			LCorner.CornerRadius = UDim.new(0, 10)
+			LCorner.Parent = ListFrame
+
+			local ListScrolling = Instance.new("ScrollingFrame")
+			ListScrolling.Size = UDim2.new(1, 0, 1, 0)
+			ListScrolling.BackgroundTransparency = 1
+			ListScrolling.ScrollBarThickness = 4
+			ListScrolling.Parent = ListFrame
+
+			local ListLayout2 = Instance.new("UIListLayout")
+			ListLayout2.Padding = UDim.new(0, 2)
+			ListLayout2.SortOrder = Enum.SortOrder.LayoutOrder
+			ListLayout2.Parent = ListScrolling
+
+			local open = false
+			local currentHeight = 0
+
+			DropdownBtn.MouseButton1Click:Connect(function()
+				open = not open
+				if open then
+					-- Calcul de la hauteur max (max 5 options visibles)
+					currentHeight = math.min(#options * 38, 190)
+					ListFrame.Visible = true
+					TweenService:Create(ListFrame, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+						Size = UDim2.new(0.32, 0, 0, currentHeight)
+					}):Play()
+				else
+					TweenService:Create(ListFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+						Size = UDim2.new(0.32, 0, 0, 0)
+					}):Play()
+					task.wait(0.3)
+					ListFrame.Visible = false
+				end
 			end)
-		end
 
-		function Tab:AddKeybind(name, default, callback)
-			local Frame = Instance.new("Frame")
-			Frame.Size = UDim2.new(1, -20, 0, 50)
-			Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-			Frame.Parent = Page
+			-- Ajout des options dans la liste
+			for _, opt in ipairs(options) do
+				local OptionBtn = Instance.new("TextButton")
+				OptionBtn.Size = UDim2.new(1, 0, 0, 36)
+				OptionBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+				OptionBtn.Text = opt
+				OptionBtn.TextColor3 = Color3.new(1,1,1)
+				OptionBtn.Font = Enum.Font.Gotham
+				OptionBtn.TextScaled = true
+				OptionBtn.Parent = ListScrolling
 
-			local Corner = Instance.new("UICorner")
-			Corner.CornerRadius = UDim.new(0, 10)
-			Corner.Parent = Frame
+				local OCorner = Instance.new("UICorner")
+				OCorner.CornerRadius = UDim.new(0, 6)
+				OCorner.Parent = OptionBtn
 
-			local Label = Instance.new("TextLabel")
-			Label.Size = UDim2.new(0.7, 0, 1, 0)
-			Label.BackgroundTransparency = 1
-			Label.Text = name
-			Label.TextXAlignment = Enum.TextXAlignment.Left
-			Label.TextColor3 = Color3.new(1,1,1)
-			Label.Font = Enum.Font.Gotham
-			Label.TextScaled = true
-			Label.Parent = Frame
-
-			local BindButton = Instance.new("TextButton")
-			BindButton.Size = UDim2.new(0.25, 0, 0.8, 0)
-			BindButton.Position = UDim2.new(0.72, 0, 0.1, 0)
-			BindButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-			BindButton.Text = default or "None"
-			BindButton.TextColor3 = Color3.new(1,1,1)
-			BindButton.Font = Enum.Font.Gotham
-			BindButton.TextScaled = true
-			BindButton.Parent = Frame
-
-			local BC = Instance.new("UICorner")
-			BC.CornerRadius = UDim.new(0, 8)
-			BC.Parent = BindButton
-
-			-- Keybind logic (simple)
-			BindButton.MouseButton1Click:Connect(function()
-				BindButton.Text = "..."
-				local conn
-				conn = game:GetService("UserInputService").InputBegan:Connect(function(input)
-					if input.KeyCode ~= Enum.KeyCode.Unknown then
-						BindButton.Text = input.KeyCode.Name
-						conn:Disconnect()
-						if callback then callback(input.KeyCode) end
-					end
+				OptionBtn.MouseButton1Click:Connect(function()
+					DropdownBtn.Text = opt
+					open = false
+					TweenService:Create(ListFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0.32, 0, 0, 0)}):Play()
+					task.wait(0.25)
+					ListFrame.Visible = false
+					if callback then callback(opt) end
 				end)
+			end
+
+			ListScrolling.CanvasSize = UDim2.new(0, 0, 0, #options * 38)
+		end
+
+		-- Button avec " > " comme sur ta photo
+		function Tab:AddButton(name, callback)
+			local Frame = Instance.new("Frame")
+			Frame.Size = UDim2.new(1, -20, 0, 45)
+			Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+			Frame.Parent = Page
+
+			local Corner = Instance.new("UICorner")
+			Corner.CornerRadius = UDim.new(0, 10)
+			Corner.Parent = Frame
+
+			local Btn = Instance.new("TextButton")
+			Btn.Size = UDim2.new(1, 0, 1, 0)
+			Btn.BackgroundTransparency = 1
+			Btn.Text = name .. "   >"
+			Btn.TextXAlignment = Enum.TextXAlignment.Left
+			Btn.TextColor3 = Color3.new(1,1,1)
+			Btn.Font = Enum.Font.Gotham
+			Btn.TextScaled = true
+			Btn.Parent = Frame
+
+			Btn.MouseButton1Click:Connect(function()
+				if callback then callback() end
 			end)
 		end
 
+		-- Section Advanced
 		function Tab:AddSection(text)
 			local Sep = Instance.new("Frame")
 			Sep.Size = UDim2.new(1, -20, 0, 35)
@@ -442,7 +528,7 @@ function Vanity:MakeWindow(options)
 			TextLabel.Parent = Sep
 		end
 
-		-- Premier tab sélectionné par défaut
+		-- Premier tab sélectionné
 		if not self.CurrentTab then
 			TabButton.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
 			Page.Visible = true
@@ -453,6 +539,7 @@ function Vanity:MakeWindow(options)
 		return Tab
 	end
 
+	-- Retourne l'objet pour l'utiliser
 	return self
 end
 
