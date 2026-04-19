@@ -1,25 +1,25 @@
--- VanityUI - Tabs en haut + Boutons - et ✕ en haut à droite
-local Vanity = {}
+-- VanityUI → AquaPulse UI (Version finale comme tu veux)
+local AquaPulse = {}
 
-function Vanity:MakeWindow()
+function AquaPulse:MakeWindow()
 	local self = { Visible = true, CurrentTab = nil }
 
 	local TweenService = game:GetService("TweenService")
 	local UserInputService = game:GetService("UserInputService")
 
 	local isMobile = UserInputService.TouchEnabled
-	local width = isMobile and 325 or 420
-	local height = isMobile and 480 or 540
+	local width = isMobile and 310 or 400
+	local height = isMobile and 460 or 530
 
 	local ScreenGui = Instance.new("ScreenGui")
-	ScreenGui.Name = "VanityUI"
+	ScreenGui.Name = "AquaPulseUI"
 	ScreenGui.ResetOnSpawn = false
 	ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-	-- Main Frame - À DROITE
+	-- Main Frame → OUVERT À GAUCHE
 	local Main = Instance.new("Frame")
 	Main.Size = UDim2.new(0, width, 0, height)
-	Main.Position = UDim2.new(1, -width - 20, 0.5, -height/2)
+	Main.Position = UDim2.new(0, 20, 0.5, -height/2)   -- ← GAUCHE
 	Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 	Main.BorderSizePixel = 0
 	Main.Parent = ScreenGui
@@ -29,11 +29,11 @@ function Vanity:MakeWindow()
 	MainCorner.Parent = Main
 
 	local Stroke = Instance.new("UIStroke")
-	Stroke.Color = Color3.fromRGB(0, 162, 255)
+	Stroke.Color = Color3.fromRGB(0, 170, 255)
 	Stroke.Thickness = 3
 	Stroke.Parent = Main
 
-	-- Header Bleu VANITY
+	-- Header bleu AQUAPULSE
 	local Header = Instance.new("Frame")
 	Header.Size = UDim2.new(1, 0, 0, 90)
 	Header.BackgroundColor3 = Color3.fromRGB(0, 110, 255)
@@ -41,8 +41,8 @@ function Vanity:MakeWindow()
 
 	local HeaderGradient = Instance.new("UIGradient")
 	HeaderGradient.Color = ColorSequence.new{
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 180, 255)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 70, 220))
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 200, 255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 80, 220))
 	}
 	HeaderGradient.Parent = Header
 
@@ -50,35 +50,34 @@ function Vanity:MakeWindow()
 	HCorner.CornerRadius = UDim.new(0, 16)
 	HCorner.Parent = Header
 
-	-- Logo V + VANITY
-	local V = Instance.new("TextLabel")
-	V.Size = UDim2.new(0, 68, 0, 68)
-	V.Position = UDim2.new(0, 25, 0.5, -34)
-	V.BackgroundTransparency = 1
-	V.Text = "V"
-	V.TextColor3 = Color3.fromRGB(0, 230, 255)
-	V.TextScaled = true
-	V.Font = Enum.Font.GothamBlack
-	V.Parent = Header
+	-- Logo A + AQUAPULSE
+	local ALogo = Instance.new("TextLabel")
+	ALogo.Size = UDim2.new(0, 68, 0, 68)
+	ALogo.Position = UDim2.new(0, 25, 0.5, -34)
+	ALogo.BackgroundTransparency = 1
+	ALogo.Text = "A"
+	ALogo.TextColor3 = Color3.fromRGB(0, 240, 255)
+	ALogo.TextScaled = true
+	ALogo.Font = Enum.Font.GothamBlack
+	ALogo.Parent = Header
 
-	local VanityText = Instance.new("TextLabel")
-	VanityText.Size = UDim2.new(0.6, 0, 0, 60)
-	VanityText.Position = UDim2.new(0.22, 0, 0.5, -30)
-	VanityText.BackgroundTransparency = 1
-	VanityText.Text = "VANITY"
-	VanityText.TextColor3 = Color3.new(1,1,1)
-	VanityText.TextScaled = true
-	VanityText.Font = Enum.Font.GothamBlack
-	VanityText.Parent = Header
+	local TitleText = Instance.new("TextLabel")
+	TitleText.Size = UDim2.new(0.65, 0, 0, 60)
+	TitleText.Position = UDim2.new(0.24, 0, 0.5, -30)
+	TitleText.BackgroundTransparency = 1
+	TitleText.Text = "AQUAPULSE"
+	TitleText.TextColor3 = Color3.new(1,1,1)
+	TitleText.TextScaled = true
+	TitleText.Font = Enum.Font.GothamBlack
+	TitleText.Parent = Header
 
-	-- Boutons en haut à droite : - et ✕
+	-- Boutons - et ✕ tout à droite
 	local ButtonFrame = Instance.new("Frame")
 	ButtonFrame.Size = UDim2.new(0, 90, 0, 40)
 	ButtonFrame.Position = UDim2.new(1, -100, 0, 8)
 	ButtonFrame.BackgroundTransparency = 1
 	ButtonFrame.Parent = Header
 
-	-- Bouton Réduire "-"
 	local MinimizeBtn = Instance.new("TextButton")
 	MinimizeBtn.Size = UDim2.new(0, 38, 0, 38)
 	MinimizeBtn.Position = UDim2.new(0, 0, 0.5, -19)
@@ -89,7 +88,6 @@ function Vanity:MakeWindow()
 	MinimizeBtn.Font = Enum.Font.GothamBold
 	MinimizeBtn.Parent = ButtonFrame
 
-	-- Bouton Fermer "✕"
 	local CloseBtn = Instance.new("TextButton")
 	CloseBtn.Size = UDim2.new(0, 38, 0, 38)
 	CloseBtn.Position = UDim2.new(1, -38, 0.5, -19)
@@ -100,7 +98,7 @@ function Vanity:MakeWindow()
 	CloseBtn.Font = Enum.Font.GothamBold
 	CloseBtn.Parent = ButtonFrame
 
-	-- Title Bar (nom du tab)
+	-- Title Bar (nom du tab actuel)
 	local TitleBar = Instance.new("Frame")
 	TitleBar.Size = UDim2.new(1, 0, 0, 40)
 	TitleBar.Position = UDim2.new(0, 0, 0, 90)
@@ -116,27 +114,45 @@ function Vanity:MakeWindow()
 	self.TitleLabel.TextScaled = true
 	self.TitleLabel.Parent = TitleBar
 
-	-- Tab Bar (en haut, juste sous le titre du tab)
-	local TabBar = Instance.new("Frame")
-	TabBar.Size = UDim2.new(1, 0, 0, 45)
-	TabBar.Position = UDim2.new(0, 0, 0, 130)
-	TabBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-	TabBar.Parent = Main
+	-- Tab Bar (horizontal en haut - si trop de tabs → scrollable)
+	local TabBarFrame = Instance.new("Frame")
+	TabBarFrame.Size = UDim2.new(1, 0, 0, 45)
+	TabBarFrame.Position = UDim2.new(0, 0, 0, 130)
+	TabBarFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	TabBarFrame.Parent = Main
+
+	local TabScroll = Instance.new("ScrollingFrame")
+	TabScroll.Size = UDim2.new(1, 0, 1, 0)
+	TabScroll.BackgroundTransparency = 1
+	TabScroll.ScrollBarThickness = 4
+	TabScroll.ScrollBarImageColor3 = Color3.fromRGB(0, 170, 255)
+	TabScroll.Parent = TabBarFrame
 
 	local TabLayout = Instance.new("UIListLayout")
 	TabLayout.FillDirection = Enum.FillDirection.Horizontal
 	TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	TabLayout.Padding = UDim.new(0, 5)
-	TabLayout.Parent = TabBar
+	TabLayout.Padding = UDim.new(0, 6)
+	TabLayout.Parent = TabScroll
 
-	-- Content Area
+	-- Content
 	local Content = Instance.new("Frame")
 	Content.Size = UDim2.new(1, 0, 1, -205)
 	Content.Position = UDim2.new(0, 0, 0, 175)
 	Content.BackgroundTransparency = 1
 	Content.Parent = Main
 
-	-- Footer
+	local ContentScrolling = Instance.new("ScrollingFrame")
+	ContentScrolling.Size = UDim2.new(1, 0, 1, 0)
+	ContentScrolling.BackgroundTransparency = 1
+	ContentScrolling.ScrollBarThickness = 5
+	ContentScrolling.Parent = Content
+
+	local ListLayout = Instance.new("UIListLayout")
+	ListLayout.Padding = UDim.new(0, 8)
+	ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	ListLayout.Parent = ContentScrolling
+
+	-- Footer avec ton nouveau discord
 	local Footer = Instance.new("Frame")
 	Footer.Size = UDim2.new(1, 0, 0, 30)
 	Footer.Position = UDim2.new(0, 0, 1, -30)
@@ -146,54 +162,60 @@ function Vanity:MakeWindow()
 	local FooterText = Instance.new("TextLabel")
 	FooterText.Size = UDim2.new(1,0,1,0)
 	FooterText.BackgroundTransparency = 1
-	FooterText.Text = "Build 51538 | discord.gg/vanitymenu   2 / 8"
+	FooterText.Text = "Build 51538 | discord.gg/ZCU9uMUcz6"
 	FooterText.TextColor3 = Color3.fromRGB(140, 140, 140)
 	FooterText.Font = Enum.Font.Gotham
 	FooterText.TextScaled = true
 	FooterText.Parent = Footer
 
 	-- Draggable (sur le header)
+	local dragging = false
 	Header.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
 			local startPos = Main.Position
-			local startMouse = input.Position
-			local conn = game:GetService("RunService").RenderStepped:Connect(function()
+			local startInput = input.Position
+			local conn
+			conn = game:GetService("RunService").RenderStepped:Connect(function()
 				if dragging then
-					local delta = UserInputService:GetMouseLocation() - startMouse
+					local delta = UserInputService:GetMouseLocation() - startInput
 					Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 				end
 			end)
 			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then conn:Disconnect() end
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+					if conn then conn:Disconnect() end
+				end
 			end)
 		end
 	end)
 
-	-- Fonctions des boutons
+	-- Boutons - et ✕
 	MinimizeBtn.MouseButton1Click:Connect(function()
 		self:Toggle()
 	end)
 
 	CloseBtn.MouseButton1Click:Connect(function()
-		Main:Destroy()  -- ferme complètement le menu
+		Main:Destroy()
 	end)
 
 	function self:Toggle()
 		self.Visible = not self.Visible
-		local target = self.Visible and height or 90  -- réduit jusqu'au header
-		TweenService:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, target)}):Play()
+		local targetHeight = self.Visible and height or 90
+		TweenService:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, targetHeight)}):Play()
 	end
 
-	-- Create Tab
+	-- Create Tab (tabs adaptatifs avec scroll si trop nombreux)
 	function self:CreateTab(name)
 		local TabButton = Instance.new("TextButton")
-		TabButton.Size = UDim2.new(0.333, 0, 1, 0)
+		TabButton.Size = UDim2.new(0, 110, 1, 0)
 		TabButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 		TabButton.Text = name
 		TabButton.TextColor3 = Color3.new(1,1,1)
 		TabButton.Font = Enum.Font.GothamBold
 		TabButton.TextScaled = true
-		TabButton.Parent = TabBar
+		TabButton.Parent = TabScroll
 
 		local TabCorner = Instance.new("UICorner")
 		TabCorner.CornerRadius = UDim.new(0, 8)
@@ -204,12 +226,12 @@ function Vanity:MakeWindow()
 		Page.BackgroundTransparency = 1
 		Page.ScrollBarThickness = 5
 		Page.Visible = false
-		Page.Parent = Content
+		Page.Parent = ContentScrolling
 
-		local List = Instance.new("UIListLayout")
-		List.Padding = UDim.new(0, 8)
-		List.SortOrder = Enum.SortOrder.LayoutOrder
-		List.Parent = Page
+		local PageList = Instance.new("UIListLayout")
+		PageList.Padding = UDim.new(0, 8)
+		PageList.SortOrder = Enum.SortOrder.LayoutOrder
+		PageList.Parent = Page
 
 		TabButton.MouseButton1Click:Connect(function()
 			if self.CurrentTab then
@@ -217,15 +239,17 @@ function Vanity:MakeWindow()
 				self.CurrentTab.Page.Visible = false
 			end
 			Page.Visible = true
-			TabButton.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
+			TabButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 			self.TitleLabel.Text = name
 			self.CurrentTab = {Page = Page, Button = TabButton}
 		end)
 
+		-- Auto scroll du TabBar si trop de tabs
+		TabScroll.CanvasSize = UDim2.new(0, TabLayout.AbsoluteContentSize.X, 0, 0)
+
 		local Tab = {}
 
 		function Tab:AddToggle(name, default, callback)
-			-- Toggle code (identique à avant, avec animation fluide)
 			local Frame = Instance.new("Frame")
 			Frame.Size = UDim2.new(1, -20, 0, 50)
 			Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -248,7 +272,7 @@ function Vanity:MakeWindow()
 			local Switch = Instance.new("Frame")
 			Switch.Size = UDim2.new(0, 62, 0, 32)
 			Switch.Position = UDim2.new(0.82, 0, 0.5, -16)
-			Switch.BackgroundColor3 = default and Color3.fromRGB(0, 162, 255) or Color3.fromRGB(60, 60, 60)
+			Switch.BackgroundColor3 = default and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(60, 60, 60)
 			Switch.Parent = Frame
 
 			local SC = Instance.new("UICorner")
@@ -267,9 +291,7 @@ function Vanity:MakeWindow()
 
 			local state = default
 			local function Update()
-				TweenService:Create(Switch, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-					BackgroundColor3 = state and Color3.fromRGB(0, 162, 255) or Color3.fromRGB(60, 60, 60)
-				}):Play()
+				TweenService:Create(Switch, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {BackgroundColor3 = state and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(60, 60, 60)}):Play()
 				Knob:TweenPosition(UDim2.new(state and 1 or 0, state and -28 or 0, 0.5, -14), "Out", "Quint", 0.25, true)
 			end
 
@@ -329,9 +351,8 @@ function Vanity:MakeWindow()
 			Txt.Parent = Sep
 		end
 
-		-- Dropdown avec liste descendante
 		function Tab:AddDropdown(name, options, default, callback)
-			-- (Même beau dropdown que précédemment)
+			-- Même beau dropdown avec liste qui descend
 			local Frame = Instance.new("Frame")
 			Frame.Size = UDim2.new(1, -20, 0, 50)
 			Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -428,9 +449,9 @@ function Vanity:MakeWindow()
 			Scrolling.CanvasSize = UDim2.new(0,0,0,#options*38)
 		end
 
-		-- Sélection du premier tab
+		-- Premier tab par défaut
 		if not self.CurrentTab then
-			TabButton.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
+			TabButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 			Page.Visible = true
 			self.TitleLabel.Text = name
 			self.CurrentTab = {Page = Page, Button = TabButton}
@@ -442,4 +463,4 @@ function Vanity:MakeWindow()
 	return self
 end
 
-return Vanity
+return AquaPulse
