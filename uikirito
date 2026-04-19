@@ -1,8 +1,8 @@
--- AquaPulse UI - Menu à gauche + Draggable
+-- AquaPulse UI - Amélioré : Bouton - + Croix → Rond en haut au milieu
 local AquaPulse = {}
 
 function AquaPulse:MakeWindow()
-	local self = { Visible = true, CurrentTab = nil }
+	local self = { Visible = true, CurrentTab = nil, IconVisible = false }
 
 	local TweenService = game:GetService("TweenService")
 	local UserInputService = game:GetService("UserInputService")
@@ -16,10 +16,10 @@ function AquaPulse:MakeWindow()
 	ScreenGui.ResetOnSpawn = false
 	ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-	-- Main Frame - OUVERT À GAUCHE
+	-- Main Menu Frame (à gauche)
 	local Main = Instance.new("Frame")
 	Main.Size = UDim2.new(0, width, 0, height)
-	Main.Position = UDim2.new(0, 20, 0.5, -height/2)   -- Bien à gauche avec petit padding
+	Main.Position = UDim2.new(0, 20, 0.5, -height/2)
 	Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 	Main.BorderSizePixel = 0
 	Main.Parent = ScreenGui
@@ -33,7 +33,7 @@ function AquaPulse:MakeWindow()
 	Stroke.Thickness = 3
 	Stroke.Parent = Main
 
-	-- Header bleu AQUAPULSE
+	-- Header
 	local Header = Instance.new("Frame")
 	Header.Size = UDim2.new(1, 0, 0, 90)
 	Header.BackgroundColor3 = Color3.fromRGB(0, 110, 255)
@@ -50,7 +50,7 @@ function AquaPulse:MakeWindow()
 	HCorner.CornerRadius = UDim.new(0, 16)
 	HCorner.Parent = Header
 
-	-- Logo A + AQUAPULSE
+	-- Logo AQUAPULSE
 	local ALogo = Instance.new("TextLabel")
 	ALogo.Size = UDim2.new(0, 68, 0, 68)
 	ALogo.Position = UDim2.new(0, 25, 0.5, -34)
@@ -71,32 +71,43 @@ function AquaPulse:MakeWindow()
 	TitleText.Font = Enum.Font.GothamBlack
 	TitleText.Parent = Header
 
-	-- Boutons − et ✕
+	-- Boutons en haut à droite
 	local ButtonFrame = Instance.new("Frame")
 	ButtonFrame.Size = UDim2.new(0, 90, 0, 40)
 	ButtonFrame.Position = UDim2.new(1, -100, 0, 8)
 	ButtonFrame.BackgroundTransparency = 1
 	ButtonFrame.Parent = Header
 
+	-- Bouton Réduire (−) amélioré
 	local MinimizeBtn = Instance.new("TextButton")
 	MinimizeBtn.Size = UDim2.new(0, 38, 0, 38)
 	MinimizeBtn.Position = UDim2.new(0, 0, 0.5, -19)
-	MinimizeBtn.BackgroundTransparency = 1
+	MinimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	MinimizeBtn.BackgroundTransparency = 0.85
 	MinimizeBtn.Text = "−"
-	MinimizeBtn.TextColor3 = Color3.new(1,1,1)
+	MinimizeBtn.TextColor3 = Color3.new(0, 0, 0)
 	MinimizeBtn.TextScaled = true
 	MinimizeBtn.Font = Enum.Font.GothamBold
 	MinimizeBtn.Parent = ButtonFrame
 
+	local MinCorner = Instance.new("UICorner")
+	MinCorner.CornerRadius = UDim.new(1, 0)
+	MinCorner.Parent = MinimizeBtn
+
+	-- Bouton Fermer (✕)
 	local CloseBtn = Instance.new("TextButton")
 	CloseBtn.Size = UDim2.new(0, 38, 0, 38)
 	CloseBtn.Position = UDim2.new(1, -38, 0.5, -19)
-	CloseBtn.BackgroundTransparency = 1
+	CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 	CloseBtn.Text = "✕"
 	CloseBtn.TextColor3 = Color3.new(1,1,1)
 	CloseBtn.TextScaled = true
 	CloseBtn.Font = Enum.Font.GothamBold
 	CloseBtn.Parent = ButtonFrame
+
+	local CloseCorner = Instance.new("UICorner")
+	CloseCorner.CornerRadius = UDim.new(1, 0)
+	CloseCorner.Parent = CloseBtn
 
 	-- Title Bar
 	local TitleBar = Instance.new("Frame")
@@ -114,7 +125,7 @@ function AquaPulse:MakeWindow()
 	self.TitleLabel.TextScaled = true
 	self.TitleLabel.Parent = TitleBar
 
-	-- Tab Bar (avec scroll si trop de tabs)
+	-- Tab Bar
 	local TabBarFrame = Instance.new("Frame")
 	TabBarFrame.Size = UDim2.new(1, 0, 0, 45)
 	TabBarFrame.Position = UDim2.new(0, 0, 0, 130)
@@ -133,7 +144,7 @@ function AquaPulse:MakeWindow()
 	TabLayout.Padding = UDim.new(0, 6)
 	TabLayout.Parent = TabScroll
 
-	-- Content Scrolling
+	-- Content
 	local Content = Instance.new("ScrollingFrame")
 	Content.Size = UDim2.new(1, 0, 1, -205)
 	Content.Position = UDim2.new(0, 0, 0, 175)
@@ -162,29 +173,40 @@ function AquaPulse:MakeWindow()
 	FooterText.TextScaled = true
 	FooterText.Parent = Footer
 
-	-- === DRAGGABLE (très fluide) ===
-	local dragging = false
-	local dragStart, startPos
+	-- === Rond de réapparition (au milieu en haut) ===
+	local ReopenIcon = Instance.new("TextButton")
+	ReopenIcon.Size = UDim2.new(0, 50, 0, 50)
+	ReopenIcon.Position = UDim2.new(0.5, -25, 0, 20)
+	ReopenIcon.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+	ReopenIcon.Text = "A"
+	ReopenIcon.TextColor3 = Color3.new(1,1,1)
+	ReopenIcon.TextScaled = true
+	ReopenIcon.Font = Enum.Font.GothamBlack
+	ReopenIcon.Visible = false
+	ReopenIcon.Parent = ScreenGui
 
+	local IconCorner = Instance.new("UICorner")
+	IconCorner.CornerRadius = UDim.new(1, 0)
+	IconCorner.Parent = ReopenIcon
+
+	local IconStroke = Instance.new("UIStroke")
+	IconStroke.Color = Color3.fromRGB(255, 255, 255)
+	IconStroke.Thickness = 2
+	IconStroke.Parent = ReopenIcon
+
+	-- Draggable sur le header
+	local dragging = false
 	Header.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
-			dragStart = input.Position
-			startPos = Main.Position
-
-			local conn
-			conn = game:GetService("RunService").RenderStepped:Connect(function()
+			local startPos = Main.Position
+			local startMouse = input.Position
+			local conn = game:GetService("RunService").RenderStepped:Connect(function()
 				if dragging then
-					local delta = UserInputService:GetMouseLocation() - dragStart
-					Main.Position = UDim2.new(
-						startPos.X.Scale,
-						startPos.X.Offset + delta.X,
-						startPos.Y.Scale,
-						startPos.Y.Offset + delta.Y
-					)
+					local delta = UserInputService:GetMouseLocation() - startMouse
+					Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 				end
 			end)
-
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
 					dragging = false
@@ -194,13 +216,22 @@ function AquaPulse:MakeWindow()
 		end
 	end)
 
-	-- Boutons
+	-- Fonctions des boutons
 	MinimizeBtn.MouseButton1Click:Connect(function()
 		self:Toggle()
 	end)
 
 	CloseBtn.MouseButton1Click:Connect(function()
-		Main:Destroy()
+		Main.Visible = false
+		ReopenIcon.Visible = true
+		self.Visible = false
+	end)
+
+	-- Cliquer sur le rond pour réouvrir
+	ReopenIcon.MouseButton1Click:Connect(function()
+		Main.Visible = true
+		ReopenIcon.Visible = false
+		self.Visible = true
 	end)
 
 	function self:Toggle()
@@ -209,7 +240,7 @@ function AquaPulse:MakeWindow()
 		TweenService:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, targetHeight)}):Play()
 	end
 
-	-- Create Tab
+	-- Create Tab (identique à avant)
 	function self:CreateTab(name)
 		local TabButton = Instance.new("TextButton")
 		TabButton.Size = UDim2.new(0, 110, 1, 0)
@@ -247,12 +278,12 @@ function AquaPulse:MakeWindow()
 			self.CurrentTab = {Page = Page, Button = TabButton}
 		end)
 
-		-- Auto-scroll du TabBar si beaucoup de tabs
 		TabScroll.CanvasSize = UDim2.new(0, TabLayout.AbsoluteContentSize.X + 20, 0, 0)
 
 		local Tab = {}
 
 		function Tab:AddToggle(name, default, callback)
+			-- Toggle (code fluide)
 			local Frame = Instance.new("Frame")
 			Frame.Size = UDim2.new(1, -20, 0, 50)
 			Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -294,9 +325,7 @@ function AquaPulse:MakeWindow()
 
 			local state = default
 			local function Update()
-				TweenService:Create(Switch, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
-					BackgroundColor3 = state and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(60, 60, 60)
-				}):Play()
+				TweenService:Create(Switch, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {BackgroundColor3 = state and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(60, 60, 60)}):Play()
 				Knob:TweenPosition(UDim2.new(state and 1 or 0, state and -28 or 0, 0.5, -14), "Out", "Quint", 0.25, true)
 			end
 
@@ -357,6 +386,7 @@ function AquaPulse:MakeWindow()
 		end
 
 		function Tab:AddDropdown(name, options, default, callback)
+			-- Même dropdown beau avec animation
 			local Frame = Instance.new("Frame")
 			Frame.Size = UDim2.new(1, -20, 0, 50)
 			Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -453,7 +483,6 @@ function AquaPulse:MakeWindow()
 			Scrolling.CanvasSize = UDim2.new(0,0,0,#options*38)
 		end
 
-		-- Premier tab sélectionné
 		if not self.CurrentTab then
 			TabButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 			Page.Visible = true
