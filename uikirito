@@ -1,7 +1,9 @@
--- AquaPulse UI - Boutons - et ✕ améliorés + bien centrés en haut à droite
+-- AquaPulse UI - Version Complète (Tout inclus)
 local AquaPulse = {}
 
-function AquaPulse:MakeWindow()
+function AquaPulse:MakeWindow(config)
+	config = config or {}
+
 	local self = { Visible = true, CurrentTab = nil }
 
 	local TweenService = game:GetService("TweenService")
@@ -16,7 +18,7 @@ function AquaPulse:MakeWindow()
 	ScreenGui.ResetOnSpawn = false
 	ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-	-- Main Frame (à gauche)
+	-- Main Frame
 	local Main = Instance.new("Frame")
 	Main.Size = UDim2.new(0, width, 0, height)
 	Main.Position = UDim2.new(0, 20, 0.5, -height/2)
@@ -33,7 +35,7 @@ function AquaPulse:MakeWindow()
 	Stroke.Thickness = 3
 	Stroke.Parent = Main
 
-	-- Header bleu
+	-- Header
 	local Header = Instance.new("Frame")
 	Header.Size = UDim2.new(1, 0, 0, 85)
 	Header.BackgroundColor3 = Color3.fromRGB(0, 110, 255)
@@ -50,60 +52,72 @@ function AquaPulse:MakeWindow()
 	HCorner.CornerRadius = UDim.new(0, 16)
 	HCorner.Parent = Header
 
-	-- Logo A + AQUAPULSE
-	local ALogo = Instance.new("TextLabel")
-	ALogo.Size = UDim2.new(0, 65, 0, 65)
-	ALogo.Position = UDim2.new(0, 22, 0.5, -32)
-	ALogo.BackgroundTransparency = 1
-	ALogo.Text = "A"
-	ALogo.TextColor3 = Color3.fromRGB(0, 240, 255)
-	ALogo.TextScaled = true
-	ALogo.Font = Enum.Font.GothamBlack
-	ALogo.Parent = Header
+	-- Logo (Image ou Texte)
+	local LogoFrame = Instance.new("Frame")
+	LogoFrame.Size = UDim2.new(0, 280, 0, 65)
+	LogoFrame.Position = UDim2.new(0.5, -140, 0.5, -32)
+	LogoFrame.BackgroundTransparency = 1
+	LogoFrame.Parent = Header
 
-	local TitleText = Instance.new("TextLabel")
-	TitleText.Size = UDim2.new(0.6, 0, 0, 55)
-	TitleText.Position = UDim2.new(0.23, 0, 0.5, -27)
-	TitleText.BackgroundTransparency = 1
-	TitleText.Text = "AQUAPULSE"
-	TitleText.TextColor3 = Color3.new(1,1,1)
-	TitleText.TextScaled = true
-	TitleText.Font = Enum.Font.GothamBlack
-	TitleText.Parent = Header
+	if config.LogoImage and config.LogoImage ~= "" then
+		local Logo = Instance.new("ImageLabel")
+		Logo.Size = UDim2.new(1, 0, 1, 0)
+		Logo.BackgroundTransparency = 1
+		Logo.Image = config.LogoImage
+		Logo.ScaleType = Enum.ScaleType.Fit
+		Logo.Parent = LogoFrame
+	else
+		local A = Instance.new("TextLabel")
+		A.Size = UDim2.new(0, 65, 0, 65)
+		A.BackgroundTransparency = 1
+		A.Text = "A"
+		A.TextColor3 = Color3.fromRGB(0, 240, 255)
+		A.TextScaled = true
+		A.Font = Enum.Font.GothamBlack
+		A.Parent = LogoFrame
 
-	-- Boutons tout en haut à droite (plus petits et mieux centrés)
-	local ButtonsContainer = Instance.new("Frame")
-	ButtonsContainer.Size = UDim2.new(0, 85, 0, 35)
-	ButtonsContainer.Position = UDim2.new(1, -95, 0, 8)   -- bien en haut à droite
-	ButtonsContainer.BackgroundTransparency = 1
-	ButtonsContainer.Parent = Header
+		local Name = Instance.new("TextLabel")
+		Name.Size = UDim2.new(0.65, 0, 0, 55)
+		Name.Position = UDim2.new(0.23, 0, 0.5, -27)
+		Name.BackgroundTransparency = 1
+		Name.Text = "AQUAPULSE"
+		Name.TextColor3 = Color3.new(1,1,1)
+		Name.TextScaled = true
+		Name.Font = Enum.Font.GothamBlack
+		Name.Parent = LogoFrame
+	end
 
-	-- Bouton Réduire (−) amélioré
+	-- Boutons − et ✕ (petits, bien placés en haut à droite)
+	local BtnContainer = Instance.new("Frame")
+	BtnContainer.Size = UDim2.new(0, 78, 0, 34)
+	BtnContainer.Position = UDim2.new(1, -88, 0, 8)
+	BtnContainer.BackgroundTransparency = 1
+	BtnContainer.Parent = Header
+
 	local MinimizeBtn = Instance.new("TextButton")
-	MinimizeBtn.Size = UDim2.new(0, 32, 0, 32)
-	MinimizeBtn.Position = UDim2.new(0, 0, 0.5, -16)
+	MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+	MinimizeBtn.Position = UDim2.new(0, 0, 0.5, -15)
 	MinimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	MinimizeBtn.BackgroundTransparency = 0.8
+	MinimizeBtn.BackgroundTransparency = 0.75
 	MinimizeBtn.Text = "−"
 	MinimizeBtn.TextColor3 = Color3.fromRGB(20, 20, 20)
 	MinimizeBtn.TextScaled = true
 	MinimizeBtn.Font = Enum.Font.GothamBold
-	MinimizeBtn.Parent = ButtonsContainer
+	MinimizeBtn.Parent = BtnContainer
 
 	local MinCorner = Instance.new("UICorner")
 	MinCorner.CornerRadius = UDim.new(1, 0)
 	MinCorner.Parent = MinimizeBtn
 
-	-- Bouton Fermer ✕
 	local CloseBtn = Instance.new("TextButton")
-	CloseBtn.Size = UDim2.new(0, 32, 0, 32)
-	CloseBtn.Position = UDim2.new(1, -32, 0.5, -16)
+	CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+	CloseBtn.Position = UDim2.new(1, -30, 0.5, -15)
 	CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 	CloseBtn.Text = "✕"
 	CloseBtn.TextColor3 = Color3.new(1,1,1)
 	CloseBtn.TextScaled = true
 	CloseBtn.Font = Enum.Font.GothamBold
-	CloseBtn.Parent = ButtonsContainer
+	CloseBtn.Parent = BtnContainer
 
 	local CloseCorner = Instance.new("UICorner")
 	CloseCorner.CornerRadius = UDim.new(1, 0)
@@ -152,10 +166,10 @@ function AquaPulse:MakeWindow()
 	Content.ScrollBarThickness = 5
 	Content.Parent = Main
 
-	local ListLayout = Instance.new("UIListLayout")
-	ListLayout.Padding = UDim.new(0, 8)
-	ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	ListLayout.Parent = Content
+	local ContentList = Instance.new("UIListLayout")
+	ContentList.Padding = UDim.new(0, 8)
+	ContentList.SortOrder = Enum.SortOrder.LayoutOrder
+	ContentList.Parent = Content
 
 	-- Footer
 	local Footer = Instance.new("Frame")
@@ -173,7 +187,7 @@ function AquaPulse:MakeWindow()
 	FooterText.TextScaled = true
 	FooterText.Parent = Footer
 
-	-- Rond de réapparition (haut milieu)
+	-- Rond de réapparition
 	local ReopenIcon = Instance.new("TextButton")
 	ReopenIcon.Size = UDim2.new(0, 48, 0, 48)
 	ReopenIcon.Position = UDim2.new(0.5, -24, 0, 15)
@@ -188,11 +202,6 @@ function AquaPulse:MakeWindow()
 	local IconCorner = Instance.new("UICorner")
 	IconCorner.CornerRadius = UDim.new(1, 0)
 	IconCorner.Parent = ReopenIcon
-
-	local IconStroke = Instance.new("UIStroke")
-	IconStroke.Color = Color3.fromRGB(255, 255, 255)
-	IconStroke.Thickness = 2.5
-	IconStroke.Parent = ReopenIcon
 
 	-- Draggable
 	local dragging = false
@@ -216,7 +225,7 @@ function AquaPulse:MakeWindow()
 		end
 	end)
 
-	-- Boutons actions
+	-- Actions boutons
 	MinimizeBtn.MouseButton1Click:Connect(function()
 		self:Toggle()
 	end)
@@ -233,11 +242,11 @@ function AquaPulse:MakeWindow()
 
 	function self:Toggle()
 		self.Visible = not self.Visible
-		local targetHeight = self.Visible and height or 85
-		TweenService:Create(Main, TweenInfo.new(0.35, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, targetHeight)}):Play()
+		local target = self.Visible and height or 85
+		TweenService:Create(Main, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Size = UDim2.new(0, width, 0, target)}):Play()
 	end
 
-	-- Create Tab (reste identique)
+	-- Create Tab
 	function self:CreateTab(name)
 		local TabButton = Instance.new("TextButton")
 		TabButton.Size = UDim2.new(0, 110, 1, 0)
@@ -382,7 +391,6 @@ function AquaPulse:MakeWindow()
 		end
 
 		function Tab:AddDropdown(name, options, default, callback)
-			-- Dropdown (inchangé)
 			local Frame = Instance.new("Frame")
 			Frame.Size = UDim2.new(1, -20, 0, 50)
 			Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
